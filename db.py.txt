@@ -1,0 +1,16 @@
+import oracledb
+
+connection = oracledb.connect(user="...", password="...", dsn="...")
+cursor = connection.cursor()
+cursor.execute("""
+    SELECT incident_id, sub_classification, short_description, description
+    FROM incidents
+    WHERE created_date = TRUNC(SYSDATE)
+""")
+
+columns = [col[0].lower() for col in cursor.description]
+incidents = [dict(zip(columns, row)) for row in cursor.fetchall()]
+
+top_issues = run_full_pipeline(incidents, top_n=10)
+for issue in top_issues:
+    print(issue["count"], issue["canonical_name"])
